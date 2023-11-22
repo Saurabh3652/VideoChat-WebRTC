@@ -1,0 +1,28 @@
+/* Navbar.css */
+
+nav {
+  background-color: #333;
+  padding: 10px;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+li a {
+  margin-right: 20px;
+  cursor: pointer;
+  color: white;
+  text-decoration: none; /* Remove the default underline */
+}
+
+li a:hover {
+  text-decoration: underline;
+}
+
+.active {
+  font-weight: bold;
+}
