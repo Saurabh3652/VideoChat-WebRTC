@@ -233,14 +233,14 @@ function App() {
             <IconButton className='call-btn' color="success" aria-label="call" onClick={() => callUser(idToCall)}>
               <PhoneIcon fontSize="large" />
             </IconButton>
-			<IconButton
+			{/* <IconButton
 			className='screen-share-btn' // Add a custom class for styling
 			color="primary"
 			aria-label="screen share"
 			onClick={handleToggleScreenShare}
 			>
 			<ScreenShareIcon fontSize="large" />
-</IconButton>
+</IconButton> */}
           </div>
 		  {/* handdling end call functinality  */}
           <div className="call-button">
