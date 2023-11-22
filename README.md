@@ -15,12 +15,12 @@ This is a simple video chat application built with React, Express, and Socket.IO
 - Node.js and npm installed for package.json 
 - Modern web browser with WebRTC and screen-sharing support
 
-### Installation
+### Installation proccess
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Saurabh3652/VideoChat-WebRTC.git
+   git clone https://github.com/Saurabh3652/videsdk.git
    cd videosdk
 2. for package.json file in particular folder 
     ```bash
