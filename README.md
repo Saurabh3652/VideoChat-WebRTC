@@ -37,5 +37,5 @@ This is a simple video chat application built with React, Express, and Socket.IO
 
 2. Then you can enter that id in diffrent window and click on call button
 ![Application Screenshot](./img/calling.png)
-3. you will se the answer button on screen of other user click on that to connect the call
+3. you will see the answer button on screen of other user. click on that to connect the call
 ![Application Screenshot](./img/conncted.png)
