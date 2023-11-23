@@ -1,6 +1,6 @@
-# Video Chat App with Screen Sharing
+# Video Chat App 
 
-This is a simple video chat application built with React, Express, and Socket.IO, featuring screen sharing functionality.
+This is a simple video chat application built with React, Express, and Socket.IO.
 
 ## Features
 
