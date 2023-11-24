@@ -29,6 +29,7 @@ function App() {
 
   const myVideo = useRef();
   const userVideo = useRef();
+  const shareds =useRef();
   const connectionRef = useRef();
 
   useEffect(() => {
@@ -42,6 +43,7 @@ function App() {
     });
 
     socket.on("callUser", (data) => {
+      {console.log(stream)}
       setReceivingCall(true);
       setCaller(data.from);
       setName(data.name);
@@ -58,9 +60,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const callInfo = { callAccepted, caller, callerSignal, name, idToCall };
+    const callInfo = { callAccepted, caller, callerSignal, name, idToCall,isScreenSharing };
     localStorage.setItem("callInfo", JSON.stringify(callInfo));
-  }, [callAccepted, caller, callerSignal, name, idToCall]);
+  }, [callAccepted, caller, callerSignal, name, idToCall,isScreenSharing]);
 
 	const callUser = (id) => {
 		const peer = new Peer({
@@ -138,40 +140,13 @@ function App() {
 	  };
 	  
 	  const handleToggleScreenShare = () => {
+      console.log("shared screen on")
+      setIsScreenSharing(true);
 		navigator.mediaDevices
 		  .getDisplayMedia({ video: true })
 		  .then((screenStream) => {
-			const screenPeer = new Peer({
-			  initiator: true,
-			  trickle: false,
-			  stream: screenStream,
-			});
-	  
-			screenPeer.on("signal", (data) => {
-			  socket.emit("callUser", {
-				userToCall: idToCall,
-				signalData: data,
-				from: me,
-				name: name,
-				isScreenSharing: true,
-			  });
-			});
-	  
-			socket.on("callAccepted", (signal) => {
-			  setCallAccepted(true);
-			  screenPeer.signal(signal);
-			});
-	  
-			screenPeer.on("stream", (userScreenStream) => {
-			  userVideo.current.srcObject = userScreenStream;
-			});
-	  
-			connectionRef.current = screenPeer;
-			setIsScreenSharing(true);
-		  })
-		  .catch((error) => {
-			console.error("Error sharing screen:", error);
-		  });
+      shareds.current.srcObject=screenStream;
+			})
 	  };
 
 	return (
@@ -182,6 +157,11 @@ function App() {
         <div className="video">
           {stream && (
             <video playsInline muted ref={myVideo} autoPlay style={{ width: "500px" }} />
+          )}
+        </div>
+        <div className="video">
+          {isScreenSharing &&stream && (
+            <video playsInline  ref={shareds} autoPlay style={{ width: "500px" }} />
           )}
         </div>
         <div className="video">
@@ -233,14 +213,14 @@ function App() {
             <IconButton className='call-btn' color="success" aria-label="call" onClick={() => callUser(idToCall)}>
               <PhoneIcon fontSize="large" />
             </IconButton>
-			{/* <IconButton
+			<IconButton
 			className='screen-share-btn' // Add a custom class for styling
 			color="primary"
 			aria-label="screen share"
 			onClick={handleToggleScreenShare}
 			>
 			<ScreenShareIcon fontSize="large" />
-</IconButton> */}
+</IconButton>
           </div>
 		  {/* handdling end call functinality  */}
           <div className="call-button">
@@ -254,14 +234,14 @@ function App() {
                   color={isAudioMuted ? "default" : "success"}
                   onClick={handleToggleAudio}
                 >
-                  {isAudioMuted ? "Unmuted Audio" : "Mute Audio"}
+                  {isAudioMuted ? "Mute Audio" : "Unmute Audio"}
                 </Button>
                 <Button
                   variant="contained"
                   color={isVideoMuted ? "default" : "success"}
                   onClick={handleToggleVideo}
                 >
-                  {isVideoMuted ? "Unmuted Video" : "Muted Video"}
+                  {isVideoMuted ? "Mute Video" : "Unmute Video"}
                 </Button>
               </>
             ) : null}
