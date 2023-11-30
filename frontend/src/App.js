@@ -5,6 +5,10 @@ import IconButton from "@material-ui/core/IconButton";
 import TextField from "@material-ui/core/TextField";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import PhoneIcon from "@material-ui/icons/Phone";
+import MicIcon from "@material-ui/icons/Mic";
+import MicOffIcon from "@material-ui/icons/MicOff";
+import VideocamIcon from "@material-ui/icons/Videocam";
+import VideocamOffIcon from "@material-ui/icons/VideocamOff";
 import ScreenShareIcon from "@material-ui/icons/ScreenShare"; // Import ScreenShareIcon
 import Peer from "simple-peer";
 import io from "socket.io-client";
@@ -86,7 +90,8 @@ function App() {
 		});
 	  
 		peer.on("stream", (userStream) => {
-		  userVideo.current.srcObject = userStream;
+      const combinedStream = new MediaStream([...userStream.getTracks(), ...stream.getTracks()]);
+      userVideo.current.srcObject = combinedStream;
 		});
 	  
 		connectionRef.current = peer;
@@ -139,16 +144,58 @@ function App() {
 		setIsVideoMuted(!isVideoMuted);
 	  };
 	  
-	  const handleToggleScreenShare = () => {
-      console.log("shared screen on")
-      setIsScreenSharing(true);
-		navigator.mediaDevices
-		  .getDisplayMedia({ video: true })
-		  .then((screenStream) => {
-      shareds.current.srcObject=screenStream;
-			})
-	  };
-
+    const stopScreenShare = () => {
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then((userStream) => {
+          const newStream = new MediaStream([...userStream.getTracks(), ...stream.getTracks().filter(track => track.kind !== 'video')]);
+          setStream(newStream);
+          setIsScreenSharing(false);
+    
+          // Update the video element with the user stream
+          if (myVideo.current) {
+            myVideo.current.srcObject = newStream;
+          }
+    
+          // If there's an active connection, replace the screen sharing track
+          if (connectionRef.current) {
+            connectionRef.current.replaceTrack(stream.getVideoTracks()[0], userStream.getVideoTracks()[0], stream);
+          }
+        })
+        .catch((error) => {
+          console.error("Error accessing user video:", error);
+        });
+    };
+    
+    const handleToggleScreenShare = () => {
+      if (isScreenSharing) {
+        // If currently screen sharing, stop screen sharing
+        stopScreenShare();
+      } else {
+        // If not currently screen sharing, start screen sharing
+        navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+          .then((screenStream) => {
+            const screenTrack = screenStream.getTracks()[0];
+    
+            if (connectionRef.current) {
+              connectionRef.current.replaceTrack(stream.getVideoTracks()[0], screenTrack, stream);
+            }
+    
+            if (myVideo.current) {
+              myVideo.current.srcObject = screenStream;
+            }
+    
+            socket.emit("screenShare", { isScreenSharing: true, to: idToCall });
+          })
+          .catch((error) => {
+            console.error("Error accessing screen share:", error);
+          });
+      }
+    
+      // Toggle the value of isScreenSharing
+      setIsScreenSharing(prevState => !prevState);
+    };
+    
+    
 	return (
   <>
     {/* <h1 className="app-title">VideoSdk</h1> */}
@@ -159,11 +206,7 @@ function App() {
             <video playsInline muted ref={myVideo} autoPlay style={{ width: "500px" }} />
           )}
         </div>
-        <div className="video">
-          {isScreenSharing &&stream && (
-            <video playsInline  ref={shareds} autoPlay style={{ width: "500px" }} />
-          )}
-        </div>
+
         <div className="video">
           {callAccepted && !callEnded ? (
             <video playsInline ref={userVideo} autoPlay style={{ width: "500px" }} />
@@ -217,7 +260,7 @@ function App() {
 			className='screen-share-btn' // Add a custom class for styling
 			color="primary"
 			aria-label="screen share"
-			onClick={handleToggleScreenShare}
+			onClick={!isScreenSharing?handleToggleScreenShare:stopScreenShare}
 			>
 			<ScreenShareIcon fontSize="large" />
 </IconButton>
@@ -234,14 +277,14 @@ function App() {
                   color={isAudioMuted ? "default" : "success"}
                   onClick={handleToggleAudio}
                 >
-                  {isAudioMuted ? "Mute Audio" : "Unmute Audio"}
+                  {isAudioMuted ? <MicIcon/> : <MicOffIcon/>}
                 </Button>
                 <Button
                   variant="contained"
                   color={isVideoMuted ? "default" : "success"}
                   onClick={handleToggleVideo}
                 >
-                  {isVideoMuted ? "Mute Video" : "Unmute Video"}
+                  {isVideoMuted ? <VideocamIcon/>: <VideocamOffIcon/>}
                 </Button>
               </>
             ) : null}
